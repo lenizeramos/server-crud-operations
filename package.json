@@ -1,0 +1,15 @@
+{
+  "name": "first-http-server-with-curd-operations-lenizeramos",
+  "version": "1.0.0",
+  "description": "**Objective:** Build and run your first Node.js HTTP server to gain hands-on experience with server-side development.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^22.8.2"
+  }
+}

@@ -24,7 +24,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const http = __importStar(require("http"));
-let nextID = 4;
+let nextId = 4;
 const posts = [
     {
         id: 1,
@@ -49,11 +49,8 @@ const server = http.createServer((request, response) => {
         response.end();
         return;
     }
-    //console.log(request.url);
     const url = new URL(request.url, `http://${request.headers.host}`);
-    console.log(url);
     if (url.pathname === "/posts") {
-        //console.log("aqui");
         switch (request.method) {
             case "GET":
                 response.writeHead(200, { "Content-Type": "application/json" });
@@ -63,7 +60,7 @@ const server = http.createServer((request, response) => {
             case "POST":
                 let body = "";
                 request.on("data", (chunk) => {
-                    body = chunk.toString();
+                    body += chunk.toString();
                 });
                 request.on("end", () => {
                     if (!body) {
@@ -71,14 +68,76 @@ const server = http.createServer((request, response) => {
                         response.write("Post data not provided");
                         response.end();
                     }
-                    const post = Object.assign({ id: nextID++ }, JSON.parse(body));
+                    const post = Object.assign({ id: nextId++ }, JSON.parse(body));
                     posts.push(post);
                     response.writeHead(200, { "Content-Type": "plain/text" });
                     response.write(`Post id ${post.id} created`);
                     response.end();
                 });
                 break;
+            case "PUT":
+                let putBody = "";
+                request.on("data", (chunk) => {
+                    putBody += chunk.toString();
+                });
+                request.on("end", () => {
+                    const putData = JSON.parse(putBody);
+                    const index = posts.findIndex((post) => post.id === putData.id);
+                    if (index !== -1) {
+                        posts[index] = putData;
+                        response.writeHead(200, { "Content-Type": "plain/text" });
+                        response.write("Post updated");
+                    }
+                    else {
+                        response.writeHead(404, { "Content-Type": "plain/text" });
+                        response.write("Post not found");
+                    }
+                    response.end();
+                });
+                break;
+            case "PATCH":
+                let patchBody = "";
+                request.on("data", (chunk) => {
+                    patchBody += chunk.toString();
+                });
+                request.on("end", () => {
+                    const patchData = JSON.parse(patchBody);
+                    const index = posts.findIndex((post) => post.id === patchData.id);
+                    if (index !== -1) {
+                        posts[index] = Object.assign(Object.assign({}, posts[index]), patchData);
+                        response.writeHead(200, { "Content-Type": "plain/text" });
+                        response.write("Post partially updated");
+                    }
+                    else {
+                        response.writeHead(404, { "Content-Type": "plain/text" });
+                        response.write("Post not found");
+                    }
+                    response.end();
+                });
+                break;
             case "DELETE":
+                let deleteId = url.searchParams.get("id");
+                if (!deleteId) {
+                    response.writeHead(400, { "Content-Type": "application/json" });
+                    response.write(JSON.stringify({ error: "Post ID is required for deletion" }));
+                    response.end();
+                    return;
+                }
+                let index = posts.findIndex((post) => {
+                    return post.id === Number(deleteId);
+                });
+                if (index !== -1) {
+                    posts.splice(index, 1);
+                    response.writeHead(200, { "Content-Type": "plain/text" });
+                    response.write("Post removed");
+                    response.end();
+                }
+                else {
+                    response.writeHead(404, { "Content-Type": "plain/text" });
+                    response.write("Post not found");
+                    response.end();
+                    return;
+                }
                 break;
             default:
                 response.writeHead(405, { "Content-Type": "application/json" });

@@ -5,7 +5,7 @@ interface Post {
   title: string;
   body: string;
 }
-let nextID = 4;
+let nextId = 4;
 
 const posts: Post[] = [
   {
@@ -54,7 +54,7 @@ const server = http.createServer(
           let body: string = "";
 
           request.on("data", (chunk) => {
-            body = chunk.toString();
+            body += chunk.toString();
           });
 
           request.on("end", () => {
@@ -63,7 +63,7 @@ const server = http.createServer(
               response.write("Post data not provided");
               response.end();
             }
-            const post: Post = { id: nextID++, ...JSON.parse(body) };
+            const post: Post = { id: nextId++, ...JSON.parse(body) };
             posts.push(post);
 
             response.writeHead(200, { "Content-Type": "plain/text" });
@@ -72,7 +72,74 @@ const server = http.createServer(
           });
           break;
 
+        case "PUT":
+          let putBody: string = "";
+          request.on("data", (chunk) => {
+            putBody += chunk.toString();
+          });
+
+          request.on("end", () => {
+            const putData: Post = JSON.parse(putBody);
+            const index = posts.findIndex((post) => post.id === putData.id);
+            if (index !== -1) {
+              posts[index] = putData;
+              response.writeHead(200, { "Content-Type": "plain/text" });
+              response.write("Post updated");
+            } else {
+              response.writeHead(404, { "Content-Type": "plain/text" });
+              response.write("Post not found");
+            }
+            response.end();
+          });
+          break;
+
+        case "PATCH":
+          let patchBody: string = "";
+          request.on("data", (chunk) => {
+            patchBody += chunk.toString();
+          });
+
+          request.on("end", () => {
+            const patchData: Partial<Post> = JSON.parse(patchBody);
+            const index = posts.findIndex((post) => post.id === patchData.id);
+            if (index !== -1) {
+              posts[index] = { ...posts[index], ...patchData };
+              response.writeHead(200, { "Content-Type": "plain/text" });
+              response.write("Post partially updated");
+            } else {
+              response.writeHead(404, { "Content-Type": "plain/text" });
+              response.write("Post not found");
+            }
+            response.end();
+          });
+          break;
+
         case "DELETE":
+          let deleteId = url.searchParams.get("id");
+          if (!deleteId) {
+            response.writeHead(400, { "Content-Type": "application/json" });
+            response.write(
+              JSON.stringify({ error: "Post ID is required for deletion" })
+            );
+            response.end();
+            return;
+          }
+
+          let index = posts.findIndex((post) => {
+            return post.id === Number(deleteId);
+          });
+          //console.log(index)
+          if (index !== -1) {
+            posts.splice(index, 1);
+            response.writeHead(200, { "Content-Type": "plain/text" });
+            response.write("Post removed");
+            response.end();
+          } else {
+            response.writeHead(404, { "Content-Type": "plain/text" });
+            response.write("Post not found");
+            response.end();
+            return;
+          }
           break;
 
         default:

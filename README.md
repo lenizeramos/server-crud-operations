@@ -1,3 +1,5 @@
+> **Note:** This repository is a personal backup of coursework originally developed as part of my studies at Cornerstone College. It was cloned from a institutional and private repository to preserve my contributions and development history.
+
 ### Assignment: Setting Up Your First Node.js Server
 
 **Objective:** Build and run your first Node.js HTTP server to gain hands-on experience with server-side development.
@@ -30,5 +32,3 @@
 
    - Implement the endpoint `/posts` that supports CRUD operations. Please reference [JSONPlaceholder](https://jsonplaceholder.typicode.com/#:~:text=the%20full%20list.-,Routes,-All%20HTTP%20methods)
    - For now, you may use a globalVariable to save information in the server. This global data you can manipulate using the CRUD operations. 
-
-
